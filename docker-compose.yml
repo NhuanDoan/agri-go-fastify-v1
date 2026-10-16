@@ -1,0 +1,52 @@
+services:
+  # local SMTP sink with a web inbox at http://localhost:8025
+  mailpit:
+    image: axllent/mailpit
+    ports: ["1025:1025", "8025:8025"]
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: agrigo_dev_v1
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agrigo_dev_v1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  # shared by the one-shot migration and the API: ONE image, built once
+  x-api: &api
+    build: .
+    image: agrigo-api:local
+    env_file: .env
+    environment: # these override whatever .env says
+      NODE_ENV: production
+      DB_HOST: db
+      SMTP_HOST: mailpit
+      MAIL_TRANSPORT: smtp
+      CORS_ORIGINS: http://localhost:5173
+    read_only: true # the app never writes to its own filesystem
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+
+  migrate:
+    <<: *api
+    command: ["node", "dist/database/cli.js", "latest"]
+    depends_on:
+      db: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    <<: *api
+    ports: ["3000:3000"]
+    depends_on:
+      db: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully } # no migration, no API
+    restart: unless-stopped
+    stop_grace_period: 30s # must exceed SHUTDOWN_DELAY_SECONDS + SHUTDOWN_TIMEOUT_SECONDS
+
+volumes:
+  pgdata:

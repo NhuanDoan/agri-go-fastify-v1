@@ -1,0 +1,72 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_PASSWORD: secret, POSTGRES_DB: agrigo_test }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_NAME: agrigo_test
+      DB_PASSWORD: secret
+      TEST_DB_NAME: agrigo_test
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable # BEFORE setup-node, so its pnpm cache works
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm test
+      # the committed API contract must match the code: change an endpoint, regenerate and commit openapi.json
+      - run: cp .env.example .env && pnpm openapi && git diff --exit-code openapi.json
+
+  image:
+    needs: test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_PASSWORD: secret, POSTGRES_DB: agrigo_ci }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
+      mailpit:
+        image: axllent/mailpit
+        ports: ["1025:1025"]
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile # for the smoke script only
+      - run: docker build -t agrigo-api:ci .
+      - name: Generate throw-away secrets
+        run: |
+          echo "JWT_ACCESS_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "JWT_REFRESH_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "OTP_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+      - name: Migrate, start and smoke-test the PRODUCTION image
+        run: |
+          RUN="docker run --network host -e NODE_ENV=production -e DB_HOST=127.0.0.1 -e DB_NAME=agrigo_ci -e DB_PASSWORD=secret \
+            -e JWT_ACCESS_SECRET -e JWT_REFRESH_SECRET -e OTP_SECRET \
+            -e MAIL_TRANSPORT=smtp -e SMTP_HOST=127.0.0.1 -e CORS_ORIGINS=https://shop.example"
+          $RUN --rm agrigo-api:ci node dist/database/cli.js latest
+          $RUN -d --name api agrigo-api:ci
+          pnpm smoke http://127.0.0.1:3000
+      - if: always()
+        run: docker logs api || true
