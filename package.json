@@ -43,7 +43,7 @@
     "@fastify/type-provider-typebox": "^5.2.0",
     "@sinclair/typebox": "^0.34.52",
     "bcryptjs": "^3.0.3",
-    "fastify": "^5.12.5",
+    "fastify": "^5.12.7",
     "fastify-plugin": "^6.0.1",
     "jsonwebtoken": "^9.0.3",
     "knex": "^3.3.0",
