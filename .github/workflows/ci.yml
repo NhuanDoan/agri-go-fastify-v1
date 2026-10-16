@@ -24,7 +24,7 @@ jobs:
       DB_PASSWORD: secret
       TEST_DB_NAME: agrigo_test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: corepack enable # BEFORE setup-node, so its pnpm cache works
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
@@ -49,7 +49,7 @@ jobs:
         image: axllent/mailpit
         ports: ["1025:1025"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: corepack enable
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
