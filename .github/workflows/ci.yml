@@ -41,7 +41,7 @@ jobs:
     services:
       postgres:
         image: postgres:16-alpine
-        env: { POSTGRES_PASSWORD: secret, POSTGRES_DB: agrigo_ci }
+        env: { POSTGRES_PASSWORD: ci_db_password, POSTGRES_DB: agrigo_ci }
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
@@ -62,7 +62,7 @@ jobs:
           echo "OTP_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
       - name: Migrate, start and smoke-test the PRODUCTION image
         run: |
-          RUN="docker run --network host -e NODE_ENV=production -e DB_HOST=127.0.0.1 -e DB_NAME=agrigo_ci -e DB_PASSWORD=secret \
+          RUN="docker run --network host -e NODE_ENV=production -e DB_HOST=127.0.0.1 -e DB_NAME=agrigo_ci -e DB_PASSWORD=ci_db_password \
             -e JWT_ACCESS_SECRET -e JWT_REFRESH_SECRET -e OTP_SECRET \
             -e MAIL_TRANSPORT=smtp -e SMTP_HOST=127.0.0.1 -e CORS_ORIGINS=https://shop.example"
           $RUN --rm agrigo-api:ci node dist/database/cli.js latest
