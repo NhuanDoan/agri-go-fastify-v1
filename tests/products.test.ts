@@ -41,6 +41,11 @@ const ledger = (productId: number) =>
     .orderBy("id");
 
 describe("create", () => {
+  it("returns an empty image collection", async () => {
+    const product = await mk();
+    expect(product.images).toEqual([]);
+  });
+
   it("is admin only", async () => {
     const body = { categoryId, name: "X", price: 1 };
     expect((await call("POST", "/api/products", body)).statusCode).toBe(401);

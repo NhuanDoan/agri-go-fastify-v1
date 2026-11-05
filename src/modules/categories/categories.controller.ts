@@ -1,4 +1,5 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
+import { BadRequestError } from "../../common/errors/app-error.js";
 import type { IdParams } from "../../common/schemas/common.js";
 import { buildMeta } from "../../common/utils/pagination.js";
 import { ok, paginated } from "../../common/utils/response.js";
@@ -46,5 +47,24 @@ export class CategoriesController {
   remove = async (request: FastifyRequest<{ Params: IdParams }>) => {
     await this.service.remove(request.params.id);
     return ok(null, "Category deleted");
+  };
+
+  setImage = async (
+    request: FastifyRequest<{ Params: IdParams }>,
+  ) => {
+    const part = await request.file();
+    if (!part) throw new BadRequestError("Image file is required");
+    const buffer = await part.toBuffer();
+    const category = await this.service.setImageFile(
+      request.params.id,
+      buffer,
+      part.mimetype,
+    );
+    return ok(toCategoryDto(category), "Category image updated");
+  };
+
+  removeImage = async (request: FastifyRequest<{ Params: IdParams }>) => {
+    await this.service.removeImage(request.params.id);
+    return ok(null, "Category image deleted");
   };
 }

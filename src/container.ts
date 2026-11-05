@@ -22,10 +22,15 @@ import { PaymentsService } from "./modules/payments/payments.service.js";
 import { VnpayClient } from "./modules/payments/vnpay.js";
 import { ProductsRepository } from "./modules/products/products.repository.js";
 import { ProductsService } from "./modules/products/products.service.js";
+import { ProductImagesRepository } from "./modules/products/product-images.repository.js";
+import { ProductImagesService } from "./modules/products/product-images.service.js";
 import { ReviewsRepository } from "./modules/reviews/reviews.repository.js";
 import { ReviewsService } from "./modules/reviews/reviews.service.js";
 import { UsersRepository } from "./modules/users/users.repository.js";
 import { UsersService } from "./modules/users/users.service.js";
+import { CloudinaryService } from "./modules/media/cloudinary.service.js";
+import { CloudinaryCleanupRepository } from "./modules/media/cloudinary-cleanup.repository.js";
+import { CloudinaryCleanupService } from "./modules/media/cloudinary-cleanup.service.js";
 
 export function createServices(deps: {
   knex: Knex;
@@ -39,7 +44,14 @@ export function createServices(deps: {
   const usersRepo = new UsersRepository(knex);
   const authRepo = new AuthRepository(knex);
   const categoriesRepo = new CategoriesRepository(knex);
+  const media = new CloudinaryService(config);
+  const cleanup = new CloudinaryCleanupService(
+    new CloudinaryCleanupRepository(knex),
+    media,
+    log,
+  );
   const productsRepo = new ProductsRepository(knex);
+  const productImagesRepo = new ProductImagesRepository(knex);
   const inventoryRepo = new InventoryRepository();
   const cartsRepo = new CartsRepository();
   const ordersRepo = new OrdersRepository();
@@ -49,6 +61,8 @@ export function createServices(deps: {
     productsRepo,
     categoriesRepo,
     inventoryRepo,
+    productImagesRepo,
+    cleanup,
   );
   const otp = new OtpService(
     knex,
@@ -88,6 +102,8 @@ export function createServices(deps: {
   );
 
   return {
+    media,
+    cleanup,
     users: new UsersService(usersRepo, config.BCRYPT_ROUNDS),
     auth: new AuthService(
       knex,
@@ -98,9 +114,16 @@ export function createServices(deps: {
       mail,
       config.BCRYPT_ROUNDS,
     ),
-    categories: new CategoriesService(categoriesRepo),
+    categories: new CategoriesService(knex, categoriesRepo, media, cleanup),
     inventory: new InventoryService(knex, inventoryRepo),
     products,
+    productImages: new ProductImagesService(
+      knex,
+      productImagesRepo,
+      productsRepo,
+      media,
+      cleanup,
+    ),
     carts: new CartsService(knex, cartsRepo, productsRepo),
     payments,
     orders: new OrdersService(

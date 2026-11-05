@@ -5,6 +5,7 @@ import {
   StringEnum,
 } from "../../common/schemas/common.js";
 import { PRODUCT_SORTS, PRODUCT_STATUSES } from "./products.types.js";
+import { CloudinaryImageBody, ImageSchema } from "../media/media.schema.js";
 
 export const ProductSchema = Type.Object({
   id: Type.Integer(),
@@ -20,6 +21,7 @@ export const ProductSchema = Type.Object({
     name: Type.String(),
     slug: Type.String(),
   }),
+  images: Type.Array(ImageSchema),
   createdAt: Type.String(),
   updatedAt: Type.String(),
 });
@@ -74,3 +76,25 @@ export const ListProductsQuery = Type.Composite([
   }),
 ]);
 export type ListProductsQuery = Static<typeof ListProductsQuery>;
+
+export const ProductImageBody = Type.Intersect([
+  CloudinaryImageBody,
+  Type.Object({
+    isPrimary: Type.Optional(Type.Boolean()),
+    sortOrder: Type.Optional(Type.Integer({ minimum: 0 })),
+  }),
+]);
+export type ProductImageBody = Static<typeof ProductImageBody>;
+
+export const ProductImageUpdateBody = Type.Object({
+  isPrimary: Type.Optional(Type.Boolean()),
+  sortOrder: Type.Optional(Type.Integer({ minimum: 0 })),
+});
+export type ProductImageUpdateBody = Static<typeof ProductImageUpdateBody>;
+
+export const ProductImageParams = Type.Object({
+  id: Type.Integer({ minimum: 1 }),
+  imageId: Type.Integer({ minimum: 1 }),
+});
+
+export { ImageSchema };

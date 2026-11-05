@@ -109,8 +109,8 @@ export class ProductsRepository {
       .update(data);
   }
 
-  async softDelete(id: number): Promise<void> {
-    await this.db("products")
+  async softDelete(id: number, trx?: Knex.Transaction): Promise<void> {
+    await (trx ?? this.db)("products")
       .where({ id })
       .update({ deleted_at: new Date(), status: "inactive" });
   }

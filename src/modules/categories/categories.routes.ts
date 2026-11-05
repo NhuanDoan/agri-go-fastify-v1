@@ -16,6 +16,7 @@ import {
   ListCategoriesQuery,
   UpdateCategoryBody,
 } from "./categories.schema.js";
+import { ImageUploadMultipartBody } from "../media/media.schema.js";
 
 /** Registered under /api/categories. Reads are public, writes need an admin. */
 const categoriesRoutes: FastifyPluginAsyncTypebox = async (app) => {
@@ -114,6 +115,38 @@ const categoriesRoutes: FastifyPluginAsyncTypebox = async (app) => {
       },
     },
     controller.remove,
+  );
+
+  app.post(
+    "/:id/image",
+    {
+      preHandler: admin,
+      schema: {
+        tags,
+        summary: "Upload a category image (admin)",
+        security,
+        params: IdParams,
+        consumes: ["multipart/form-data"],
+        body: ImageUploadMultipartBody,
+        response: { 200: successOf(CategorySchema), ...securedErrors },
+      },
+    },
+    controller.setImage,
+  );
+
+  app.delete(
+    "/:id/image",
+    {
+      preHandler: admin,
+      schema: {
+        tags,
+        summary: "Delete a category image (admin)",
+        security,
+        params: IdParams,
+        response: { 200: successOf(Type.Null()), ...securedErrors },
+      },
+    },
+    controller.removeImage,
   );
 };
 

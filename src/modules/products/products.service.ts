@@ -10,6 +10,8 @@ import { slugify } from "../../common/utils/slugify.js";
 import type { CategoriesRepository } from "../categories/categories.repository.js";
 import type { InventoryRepository } from "../inventory/inventory.repository.js";
 import type { ProductsRepository } from "./products.repository.js";
+import type { ProductImagesRepository } from "./product-images.repository.js";
+import type { CloudinaryCleanupService } from "../media/cloudinary-cleanup.service.js";
 import type {
   CreateProductBody,
   UpdateProductBody,
@@ -19,6 +21,7 @@ import type {
   ProductRow,
   ProductStatus,
   ProductWithCategory,
+  ProductImageRow,
 } from "./products.types.js";
 
 export class ProductsService {
@@ -27,18 +30,22 @@ export class ProductsService {
     private readonly repo: ProductsRepository,
     private readonly categories: CategoriesRepository,
     private readonly inventory: InventoryRepository,
+    private readonly images: ProductImagesRepository,
+    private readonly cleanup: CloudinaryCleanupService,
   ) {}
 
   /** Visibility rule: only admins can see (or filter by) inactive products. */
-  list(
+  async list(
     filter: ProductFilter,
     actor: AuthUser | null,
   ): Promise<Paged<ProductWithCategory>> {
     const isAdmin = actor?.role === "admin";
-    return this.repo.list({
+    const result = await this.repo.list({
       ...filter,
       status: isAdmin ? filter.status : "active",
     });
+    await this.attachImages(result.items);
+    return result;
   }
 
   async get(id: number, actor: AuthUser | null): Promise<ProductWithCategory> {
@@ -47,6 +54,7 @@ export class ProductsService {
     if (!product || (product.status !== "active" && actor?.role !== "admin")) {
       throw new NotFoundError("Product not found");
     }
+    await this.attachImages([product]);
     return product;
   }
 
@@ -146,13 +154,34 @@ export class ProductsService {
 
   async remove(id: number): Promise<void> {
     await this.mustFind(id);
-    await this.repo.softDelete(id);
+    await this.db.transaction(async (trx) => {
+      const images = await trx<Pick<ProductImageRow, "public_id">>("product_images")
+        .where("product_id", id)
+        .select("public_id");
+      await this.repo.softDelete(id, trx);
+      await trx("product_images").where({ product_id: id }).delete();
+      for (const image of images) {
+        if (image.public_id) await this.cleanup.enqueue(trx, image.public_id);
+      }
+    });
   }
 
   private async mustFind(id: number): Promise<ProductWithCategory> {
     const product = await this.repo.findById(id);
     if (!product) throw new NotFoundError("Product not found");
+    await this.attachImages([product]);
     return product;
+  }
+
+  private async attachImages(products: ProductWithCategory[]): Promise<void> {
+    const images = await this.images.listByProductIds(products.map((p) => p.id));
+    const byProduct = new Map<number, typeof images>();
+    for (const image of images) {
+      const current = byProduct.get(image.product_id) ?? [];
+      current.push(image);
+      byProduct.set(image.product_id, current);
+    }
+    for (const product of products) product.images = byProduct.get(product.id) ?? [];
   }
 
   private async assertCategory(categoryId: number): Promise<void> {

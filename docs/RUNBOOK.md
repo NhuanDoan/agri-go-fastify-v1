@@ -14,6 +14,16 @@ Also set: `TRUST_PROXY=true` behind a reverse proxy (otherwise every client look
 `DOCS_ENABLED=false` unless the docs are meant to be public, `LOG_LEVEL=info`.
 Pool sizing: `DB_POOL_MAX` x number of instances must stay below PostgreSQL's `max_connections` (100 by default).
 
+## Cloudinary images
+
+Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` together to enable image uploads.
+The category/product image endpoints accept a single `multipart/form-data` field named `file` and upload it to
+Cloudinary server-side.
+Images must be JPEG, PNG, or WebP and no larger than 5 MB. The API validates that the public ID is under the
+resource-specific folder and stores only the secure URL and public ID. Never expose `CLOUDINARY_API_SECRET`.
+Cloudinary deletions are placed in a transactional cleanup queue and retried by the `cloudinary-cleanup` job;
+inspect the `cloudinary_cleanup` table if that queue is repeatedly failing.
+
 ## Probes and shutdown
 
 - Liveness `GET /health` (never touches the DB). Readiness `GET /health/ready` (DB check, 2 s timeout; 503 while draining).

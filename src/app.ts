@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance } from "fastify";
+import multipart from "@fastify/multipart";
 import { randomUUID } from "node:crypto";
 import { registerErrorHandler } from "./common/errors/error-handler.js";
 import type { AppConfig } from "./config/env.js";
@@ -68,6 +69,9 @@ export async function buildApp(
 
   // ORDER MATTERS: shared plugins -> swagger (must see routes) -> database -> auth -> mail -> services -> jobs -> routes
   await app.register(securityPlugin);
+  await app.register(multipart, {
+    limits: { files: 1, fileSize: 5 * 1024 * 1024 },
+  });
   await app.register(swaggerPlugin);
   await app.register(databasePlugin);
   await app.register(authPlugin);

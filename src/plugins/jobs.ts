@@ -30,6 +30,9 @@ export default fp(
 
     app.addHook("onReady", async () => {
       every("mail-outbox", 5_000, () => app.mail.processBatch());
+      every("cloudinary-cleanup", 30_000, () =>
+        app.services.cleanup.processBatch(),
+      );
       every(
         "housekeeping",
         60 * 60_000,

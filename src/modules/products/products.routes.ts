@@ -16,11 +16,18 @@ import {
   SetQuantityBody,
   SetStatusBody,
   UpdateProductBody,
+  ProductImageParams,
+  ProductImageUpdateBody,
+  ImageSchema,
 } from "./products.schema.js";
+import { ImageUploadMultipartBody } from "../media/media.schema.js";
 
 /** Registered under /api/products. Reads are public (inactive hidden); writes need an admin. */
 const productsRoutes: FastifyPluginAsyncTypebox = async (app) => {
-  const controller = new ProductsController(app.services.products);
+  const controller = new ProductsController(
+    app.services.products,
+    app.services.productImages,
+  );
   const tags = ["Products"];
   const security = bearerSecurity;
   const admin = [app.authenticate, app.authorize("admin")];
@@ -144,6 +151,68 @@ const productsRoutes: FastifyPluginAsyncTypebox = async (app) => {
       },
     },
     controller.remove,
+  );
+
+  app.get(
+    "/:id/images",
+    {
+      preHandler: [app.optionalAuthenticate],
+      schema: {
+        tags,
+        summary: "List product images",
+        params: IdParams,
+        response: { 200: successOf(Type.Array(ImageSchema)), ...securedErrors },
+      },
+    },
+    controller.listImages,
+  );
+
+  app.post(
+    "/:id/images",
+    {
+      preHandler: admin,
+      schema: {
+        tags,
+        summary: "Upload a product image (admin)",
+        security,
+        params: IdParams,
+        consumes: ["multipart/form-data"],
+        body: ImageUploadMultipartBody,
+        response: { 200: successOf(ImageSchema), ...securedErrors },
+      },
+    },
+    controller.addImage,
+  );
+
+  app.patch(
+    "/:id/images/:imageId",
+    {
+      preHandler: admin,
+      schema: {
+        tags,
+        summary: "Update product image ordering or primary status (admin)",
+        security,
+        params: ProductImageParams,
+        body: ProductImageUpdateBody,
+        response: { 200: successOf(ImageSchema), ...securedErrors },
+      },
+    },
+    controller.updateImage,
+  );
+
+  app.delete(
+    "/:id/images/:imageId",
+    {
+      preHandler: admin,
+      schema: {
+        tags,
+        summary: "Delete a product image (admin)",
+        security,
+        params: ProductImageParams,
+        response: { 200: successOf(Type.Null()), ...securedErrors },
+      },
+    },
+    controller.removeImage,
   );
 };
 

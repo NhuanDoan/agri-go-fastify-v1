@@ -67,4 +67,24 @@ describe("OpenAPI spec", () => {
       expect(text).not.toContain(secret);
     }
   });
+
+  it("documents image uploads as multipart binary files", () => {
+    for (const path of [
+      "/api/categories/{id}/image",
+      "/api/products/{id}/images",
+    ]) {
+      const requestBody = spec.paths[path].post.requestBody;
+      expect(requestBody.content["multipart/form-data"].schema).toEqual({
+        type: "object",
+        required: ["file"],
+        properties: { file: { type: "string", format: "binary" } },
+      });
+      expect(requestBody.content["application/json"]).toBeUndefined();
+    }
+  });
+
+  it("does not expose removed signature endpoints", () => {
+    expect(spec.paths["/api/categories/{id}/image/signature"]).toBeUndefined();
+    expect(spec.paths["/api/products/{id}/images/signature"]).toBeUndefined();
+  });
 });

@@ -48,6 +48,11 @@ const schema = z
 
     APP_NAME: z.string().default("AgriGo"),
 
+    CLOUDINARY_CLOUD_NAME: z.string().optional(),
+    CLOUDINARY_API_KEY: z.string().optional(),
+    CLOUDINARY_API_SECRET: z.string().optional(),
+    CLOUDINARY_FOLDER: z.string().default("agrigo"),
+
     OTP_SECRET: z.string().min(32),
     OTP_TTL_MINUTES: z.coerce.number().int().min(1).max(60).default(10),
     OTP_RESEND_COOLDOWN_SECONDS: z.coerce.number().int().min(0).default(60),
@@ -111,6 +116,20 @@ const schema = z
     path: ["VNPAY_HASH_SECRET"],
     message: "VNPAY_TMN_CODE and VNPAY_HASH_SECRET must be set together",
   })
+  .refine(
+    (v) =>
+      [v.CLOUDINARY_CLOUD_NAME, v.CLOUDINARY_API_KEY, v.CLOUDINARY_API_SECRET].every(
+        Boolean,
+      ) ||
+      [v.CLOUDINARY_CLOUD_NAME, v.CLOUDINARY_API_KEY, v.CLOUDINARY_API_SECRET].every(
+        (value) => !value,
+      ),
+    {
+      path: ["CLOUDINARY_API_SECRET"],
+      message:
+        "CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET must be set together",
+    },
+  )
   .refine((v) => v.NODE_ENV !== "production" || v.CORS_ORIGINS !== "*", {
     path: ["CORS_ORIGINS"],
     message: 'must list your real origins in production (not "*")',

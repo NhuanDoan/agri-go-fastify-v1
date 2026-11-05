@@ -33,7 +33,7 @@ export const testConfig = (overrides: Record<string, string> = {}) =>
 /** Empty everything between tests (CASCADE also clears products, ledger, tokens...). */
 export async function resetDb(db: Knex): Promise<void> {
   await db.raw(
-    "TRUNCATE users, categories, mail_outbox RESTART IDENTITY CASCADE",
+    "TRUNCATE users, categories, mail_outbox, cloudinary_cleanup RESTART IDENTITY CASCADE",
   );
 }
 

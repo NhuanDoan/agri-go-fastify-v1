@@ -8,9 +8,18 @@ import type {
   UpdateCategoryBody,
 } from "./categories.schema.js";
 import type { CategoryRow } from "./categories.types.js";
+import type { CloudinaryService } from "../media/cloudinary.service.js";
+import type { CloudinaryImageBody } from "../media/media.schema.js";
+import type { CloudinaryCleanupService } from "../media/cloudinary-cleanup.service.js";
+import type { Knex } from "knex";
 
 export class CategoriesService {
-  constructor(private readonly repo: CategoriesRepository) {}
+  constructor(
+    private readonly db: Knex,
+    private readonly repo: CategoriesRepository,
+    private readonly media: CloudinaryService,
+    private readonly cleanup: CloudinaryCleanupService,
+  ) {}
 
   list(q: ListCategoriesQuery): Promise<Paged<CategoryRow>> {
     return this.repo.list(q.page, q.perPage, q.q);
@@ -64,12 +73,79 @@ export class CategoriesService {
   }
 
   async remove(id: number): Promise<void> {
-    await this.getById(id);
+    const category = await this.getById(id);
     if ((await this.repo.countProducts(id)) > 0) {
       throw new ConflictError(
         "Cannot delete a category that still has products",
       );
     }
-    await this.repo.delete(id);
+    await this.repoDeleteWithCleanup(id, category.image_public_id);
+  }
+
+  async setImage(id: number, image: CloudinaryImageBody): Promise<CategoryRow> {
+    const category = await this.getById(id);
+    const verified = await this.media.verifyImage(image, this.folder(id));
+    await this.repoUpdateWithCleanup(id, verified, category.image_public_id);
+    return this.getById(id);
+  }
+
+  async setImageFile(
+    id: number,
+    buffer: Buffer,
+    mimetype: string,
+  ): Promise<CategoryRow> {
+    await this.getById(id);
+    const image = await this.media.uploadImage(buffer, this.folder(id), mimetype);
+    try {
+      return await this.setImage(id, image);
+    } catch (error) {
+      await this.cleanup.cleanupOrphan(image.publicId);
+      throw error;
+    }
+  }
+
+  async removeImage(id: number): Promise<CategoryRow> {
+    const category = await this.getById(id);
+    await this.repoUpdateWithCleanup(id, null, category.image_public_id);
+    return this.getById(id);
+  }
+
+  private async repoDeleteWithCleanup(
+    id: number,
+    publicId: string | null,
+  ): Promise<void> {
+    await this.repoDbTransaction(async (trx) => {
+      await trx("categories").where({ id }).delete();
+      if (publicId) await this.cleanup.enqueue(trx, publicId);
+    });
+  }
+
+  private async repoUpdateWithCleanup(
+    id: number,
+    image: CloudinaryImageBody | null,
+    previousPublicId: string | null,
+  ): Promise<void> {
+    await this.repoDbTransaction(async (trx) => {
+      await trx("categories")
+        .where({ id })
+        .update(
+          image
+            ? { image_url: image.secureUrl, image_public_id: image.publicId }
+            : { image_url: null, image_public_id: null },
+        );
+      if (previousPublicId && previousPublicId !== image?.publicId) {
+        await this.cleanup.enqueue(trx, previousPublicId);
+      }
+    });
+  }
+
+  private repoDbTransaction<T>(
+    work: (trx: Knex.Transaction) => Promise<T>,
+  ): Promise<T> {
+    return this.db.transaction(work);
+  }
+
+  private folder(id: number): string {
+    return this.media.folder("categories", id);
   }
 }

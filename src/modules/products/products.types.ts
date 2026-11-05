@@ -24,9 +24,21 @@ export interface ProductRow {
   updated_at: Date;
 }
 
+export interface ProductImageRow {
+  id: number;
+  product_id: number;
+  image_url: string;
+  public_id: string | null;
+  is_primary: boolean;
+  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface ProductWithCategory extends ProductRow {
   category_name: string;
   category_slug: string;
+  images: ProductImageRow[];
 }
 
 export interface ProductFilter {

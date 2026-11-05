@@ -89,6 +89,8 @@ The API listens at <http://localhost:3000>. Interactive API documentation is ser
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | SMTP server configuration | `localhost:1025` |
 | `MAIL_LEASE_SECONDS` | Outbox worker lease duration; must exceed a single mail send | `120` |
 | `VNPAY_TMN_CODE`, `VNPAY_HASH_SECRET` | VNPay merchant credentials; configure both or neither | Unset |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Cloudinary credentials; configure all three to enable image uploads | Unset |
+| `CLOUDINARY_FOLDER` | Root folder for category and product images | `agrigo` |
 | `JOBS_ENABLED` | Enable in-process outbox and housekeeping jobs | `true` |
 
 See the full list, validation rules, and timeouts in `.env.example` and `src/config/env.ts`. Production mode rejects insecure CORS, missing or example database passwords, placeholder secrets, and the log mail transport.
