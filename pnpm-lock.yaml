@@ -185,8 +185,8 @@ importers:
         specifier: ^6.1.2
         version: 6.1.2
       '@fastify/type-provider-typebox':
-        specifier: ^5.2.0
-        version: 5.2.0(@sinclair/typebox@0.34.52)(fastify@5.12.5)
+        specifier: ^6.3.0
+        version: 6.3.0(ajv-formats@3.0.1)(typebox@1.4.3)
       '@sinclair/typebox':
         specifier: ^0.34.52
         version: 0.34.52
@@ -452,11 +452,11 @@ packages:
   '@fastify/swagger@9.9.2':
     resolution: {integrity: sha512-ayxItVgf/1axBvw33lqsA5ns02YMpT1r59G/HCJraRNWWBzvLgN+oiCBPhuzTiN67TvctlCYkG0+40WLKYuusQ==}
 
-  '@fastify/type-provider-typebox@5.2.0':
-    resolution: {integrity: sha512-RoUFTQNYlaVM/gXosFqlrUAD/JHC+OXLcj4DxNoMOag2GI7OydfCt+3vdT+6D2daJwhGAdkpxB0wLNqS7gf4CQ==}
+  '@fastify/type-provider-typebox@6.3.0':
+    resolution: {integrity: sha512-zsaoyyAdNvkuf2HOMJvf7vykRTFA/1M9J3HC0vHNtFhxNhwL36iDJl/2Tpl0XzMR0f0aATSeDV20ChH720wXYQ==}
     peerDependencies:
-      '@sinclair/typebox': '>=0.26 <=0.34'
-      fastify: ^5.0.0
+      ajv-formats: ^3.0.1
+      typebox: ^1.1.14
 
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
@@ -1387,6 +1387,9 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
+  typebox@1.4.3:
+    resolution: {integrity: sha512-u3nyf7ZciAv1GOijVpI0TDt9At5wmEi7lSHSlRrnjuThv1DcB7fgGBqqrz+fGZ54jAfTpOOX0JXwxSIg3pnxQA==}
+
   typescript@7.0.2:
     resolution: {integrity: sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA==}
     engines: {node: '>=16.20.0'}
@@ -1669,10 +1672,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@fastify/type-provider-typebox@5.2.0(@sinclair/typebox@0.34.52)(fastify@5.12.5)':
+  '@fastify/type-provider-typebox@6.3.0(ajv-formats@3.0.1)(typebox@1.4.3)':
     dependencies:
-      '@sinclair/typebox': 0.34.52
-      fastify: 5.12.5
+      ajv-formats: 3.0.1
+      typebox: 1.4.3
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
@@ -2434,6 +2437,8 @@ snapshots:
       esbuild: 0.28.2
     optionalDependencies:
       fsevents: 2.3.3
+
+  typebox@1.4.3: {}
 
   typescript@7.0.2:
     optionalDependencies:
