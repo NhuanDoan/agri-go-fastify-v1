@@ -26,6 +26,19 @@ export class CartsRepository {
         "ci.product_id",
         "ci.quantity",
         "p.name",
+        "p.discount_percent",
+        db.raw(
+          `(select round(avg(r.rating)::numeric, 1)
+            from reviews as r
+            where r.product_id = p.id) as average_rating`,
+        ),
+        db.raw(
+          `(select coalesce(sum(d.quantity), 0)
+            from order_details as d
+            join orders as o on o.id = d.order_id
+            where d.product_id = p.id
+              and o.order_status = 'completed') as sold_count`,
+        ),
         db.raw(
           `(select pi.image_url
             from product_images as pi

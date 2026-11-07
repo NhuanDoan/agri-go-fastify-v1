@@ -16,6 +16,7 @@ export interface ProductRow {
   slug: string;
   description: string | null;
   price: number; // integer VND, never a float
+  discount_percent: number;
   quantity: number;
   unit: string;
   status: ProductStatus;
@@ -39,6 +40,8 @@ export interface ProductWithCategory extends ProductRow {
   category_name: string;
   category_slug: string;
   images: ProductImageRow[];
+  average_rating: number | null;
+  sold_count: number;
 }
 
 export interface ProductFilter {

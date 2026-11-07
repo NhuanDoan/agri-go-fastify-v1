@@ -7,6 +7,10 @@ export const toProductDto = (p: ProductWithCategory): ProductDto => ({
   slug: p.slug,
   description: p.description,
   price: p.price,
+  discountPercent: p.discount_percent,
+  averageRating:
+    p.average_rating === null ? null : Number(p.average_rating),
+  soldCount: Number(p.sold_count),
   quantity: p.quantity,
   unit: p.unit,
   status: p.status,

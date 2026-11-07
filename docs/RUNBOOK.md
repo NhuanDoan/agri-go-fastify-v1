@@ -5,6 +5,8 @@
 1. Build the image, 2. run `node dist/database/cli.js latest` ONCE (a one-shot job or init step; Knex also holds a lock,
    so a second runner waits), 3. roll out the API. Never start the API before the migration succeeded.
    Rollback of code is safe while the previous schema still works; migrations should be additive (add column, then use it, then drop later).
+For product metrics, the migration adds `products.discount_percent`; verify the migration job
+completed before serving cart or product traffic. `pnpm migrate:status` should show no pending files.
 
 ## Production settings the app insists on
 
@@ -23,6 +25,14 @@ Images must be JPEG, PNG, or WebP and no larger than 5 MB. The API validates tha
 resource-specific folder and stores only the secure URL and public ID. Never expose `CLOUDINARY_API_SECRET`.
 Cloudinary deletions are placed in a transactional cleanup queue and retried by the `cloudinary-cleanup` job;
 inspect the `cloudinary_cleanup` table if that queue is repeatedly failing.
+
+## Product metrics
+
+Product and cart item responses expose `averageRating`, `soldCount`, and
+`discountPercent`. Ratings are averaged from product reviews and are `null` when
+there are no reviews. Sold count sums quantities from completed orders only;
+cancelled, pending, and in-progress orders are excluded. Discounts are an admin-set
+percentage from 0 through 100 and do not alter the base `price` field.
 
 ## Probes and shutdown
 

@@ -22,6 +22,7 @@ export type NewProduct = Pick<
   | "slug"
   | "description"
   | "price"
+  | "discount_percent"
   | "quantity"
   | "unit"
   | "status"
@@ -37,11 +38,25 @@ export class ProductsRepository {
       .whereNull("p.deleted_at");
   }
 
-  private columns = [
-    "p.*",
-    "c.name as category_name",
-    "c.slug as category_slug",
-  ];
+  private columns(db: Knex | Knex.Transaction = this.db) {
+    return [
+      "p.*",
+      "c.name as category_name",
+      "c.slug as category_slug",
+      db.raw(
+      `(select round(avg(r.rating)::numeric, 1)
+        from reviews as r
+        where r.product_id = p.id) as average_rating`,
+      ),
+      db.raw(
+      `(select coalesce(sum(d.quantity), 0)
+        from order_details as d
+        join orders as o on o.id = d.order_id
+        where d.product_id = p.id
+          and o.order_status = 'completed') as sold_count`,
+      ),
+    ];
+  }
 
   async list(f: ProductFilter): Promise<Paged<ProductWithCategory>> {
     const apply = (qb: Knex.QueryBuilder) => {
@@ -57,7 +72,7 @@ export class ProductsRepository {
     const [items, countRow] = await Promise.all([
       this.joined()
         .modify(apply)
-        .select(this.columns)
+        .select(this.columns())
         .orderByRaw(sql, bindings)
         .limit(f.perPage)
         .offset(toOffset(f.page, f.perPage)),
@@ -73,7 +88,7 @@ export class ProductsRepository {
   async findById(id: number): Promise<ProductWithCategory | undefined> {
     return (await this.joined()
       .where("p.id", id)
-      .select(this.columns)
+      .select(this.columns())
       .first()) as ProductWithCategory | undefined;
   }
 

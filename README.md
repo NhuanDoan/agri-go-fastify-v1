@@ -22,7 +22,7 @@ Backend service for AgriGo, an agricultural marketplace. The API is built with F
 - Account registration, login, refresh tokens, and email verification or password reset with one-time codes
 - Email verification is required to place orders; unverified customers can still browse and manage a cart
 - Product catalog, categories, stock ledger, and inventory history
-- Customer carts, order lifecycle, and VNPay payment integration
+- Customer carts with product images and live rating, sales, and discount metadata; order lifecycle and VNPay payment integration
 - Verified-purchase product reviews
 - Customer support conversations
 - Email outbox processing and scheduled housekeeping jobs
@@ -107,6 +107,11 @@ pnpm openapi
 
 Use the live schema as the source of truth for endpoint paths, request schemas, response schemas, and authentication requirements.
 
+Product and cart item responses include `averageRating` (nullable, 0-5), `soldCount`
+(quantities from completed orders), and `discountPercent` (0-100). The discount is
+metadata only; `price` remains the current base price until a separate sale-price
+policy is introduced.
+
 ## Policies
 
 - **Email verification.** Registration sends a 6-digit code. An unverified account may log in, browse, use the cart, edit its profile, and chat with support. It may not place orders: `POST /api/orders/checkout` and `POST /api/orders/buy-now` answer `403` with `code: "EMAIL_NOT_VERIFIED"` (show a “verify your email” prompt). Verification is read from the database on every order, so it takes effect immediately. Customers created by an admin are verified. Changing an email un-verifies it.
@@ -142,6 +147,10 @@ pnpm seed                    # seed local data
 ```
 
 Create migrations for schema changes and keep production changes backward compatible during rollout. The `seed` command inserts an administrator and baseline categories; sample products are created only outside production and only when the catalog is empty. Production seeding requires an explicit `SEED_ADMIN_PASSWORD`.
+
+Always run `pnpm migrate` (or the Docker Compose `migrate` service) before starting
+an API release that reads newly added columns. A migration failure must block the
+API rollout.
 
 ## Tests and quality checks
 

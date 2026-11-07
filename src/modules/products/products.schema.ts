@@ -13,6 +13,9 @@ export const ProductSchema = Type.Object({
   slug: Type.String(),
   description: Nullable(Type.String()),
   price: Type.Integer(),
+  discountPercent: Type.Integer({ minimum: 0, maximum: 100 }),
+  averageRating: Nullable(Type.Number({ minimum: 0, maximum: 5 })),
+  soldCount: Type.Integer({ minimum: 0 }),
   quantity: Type.Integer(),
   unit: Type.String(),
   status: StringEnum(PRODUCT_STATUSES),
@@ -35,6 +38,7 @@ export const CreateProductBody = Type.Object(
     name: Type.String({ minLength: 1, maxLength: 191 }),
     description: Type.Optional(Nullable(Type.String({ maxLength: 5000 }))),
     price: Type.Integer({ minimum: 0 }),
+    discountPercent: Type.Optional(Type.Integer({ minimum: 0, maximum: 100 })),
     quantity: Type.Optional(Type.Integer({ minimum: 0 })), // initial stock
     unit: Type.Optional(Type.String({ minLength: 1, maxLength: 20 })),
     status: Type.Optional(StringEnum(PRODUCT_STATUSES)),

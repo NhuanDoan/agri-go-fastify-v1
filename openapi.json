@@ -5828,8 +5828,8 @@
                 ],
                 "properties": {
                   "file": {
-                    "format": "binary",
-                    "type": "string"
+                    "type": "string",
+                    "format": "binary"
                   }
                 }
               }
@@ -6421,6 +6421,9 @@
                           "slug",
                           "description",
                           "price",
+                          "discountPercent",
+                          "averageRating",
+                          "soldCount",
                           "quantity",
                           "unit",
                           "status",
@@ -6444,6 +6447,21 @@
                             "nullable": true
                           },
                           "price": {
+                            "type": "integer"
+                          },
+                          "discountPercent": {
+                            "minimum": 0,
+                            "maximum": 100,
+                            "type": "integer"
+                          },
+                          "averageRating": {
+                            "minimum": 0,
+                            "maximum": 5,
+                            "type": "number",
+                            "nullable": true
+                          },
+                          "soldCount": {
+                            "minimum": 0,
                             "type": "integer"
                           },
                           "quantity": {
@@ -6743,6 +6761,11 @@
                     "minimum": 0,
                     "type": "integer"
                   },
+                  "discountPercent": {
+                    "minimum": 0,
+                    "maximum": 100,
+                    "type": "integer"
+                  },
                   "quantity": {
                     "minimum": 0,
                     "type": "integer"
@@ -6799,6 +6822,9 @@
                         "slug",
                         "description",
                         "price",
+                        "discountPercent",
+                        "averageRating",
+                        "soldCount",
                         "quantity",
                         "unit",
                         "status",
@@ -6822,6 +6848,21 @@
                           "nullable": true
                         },
                         "price": {
+                          "type": "integer"
+                        },
+                        "discountPercent": {
+                          "minimum": 0,
+                          "maximum": 100,
+                          "type": "integer"
+                        },
+                        "averageRating": {
+                          "minimum": 0,
+                          "maximum": 5,
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "soldCount": {
+                          "minimum": 0,
                           "type": "integer"
                         },
                         "quantity": {
@@ -7109,6 +7150,9 @@
                         "slug",
                         "description",
                         "price",
+                        "discountPercent",
+                        "averageRating",
+                        "soldCount",
                         "quantity",
                         "unit",
                         "status",
@@ -7132,6 +7176,21 @@
                           "nullable": true
                         },
                         "price": {
+                          "type": "integer"
+                        },
+                        "discountPercent": {
+                          "minimum": 0,
+                          "maximum": 100,
+                          "type": "integer"
+                        },
+                        "averageRating": {
+                          "minimum": 0,
+                          "maximum": 5,
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "soldCount": {
+                          "minimum": 0,
                           "type": "integer"
                         },
                         "quantity": {
@@ -7434,6 +7493,11 @@
                     "minimum": 0,
                     "type": "integer"
                   },
+                  "discountPercent": {
+                    "minimum": 0,
+                    "maximum": 100,
+                    "type": "integer"
+                  },
                   "unit": {
                     "minLength": 1,
                     "maxLength": 20,
@@ -7497,6 +7561,9 @@
                         "slug",
                         "description",
                         "price",
+                        "discountPercent",
+                        "averageRating",
+                        "soldCount",
                         "quantity",
                         "unit",
                         "status",
@@ -7520,6 +7587,21 @@
                           "nullable": true
                         },
                         "price": {
+                          "type": "integer"
+                        },
+                        "discountPercent": {
+                          "minimum": 0,
+                          "maximum": 100,
+                          "type": "integer"
+                        },
+                        "averageRating": {
+                          "minimum": 0,
+                          "maximum": 5,
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "soldCount": {
+                          "minimum": 0,
                           "type": "integer"
                         },
                         "quantity": {
@@ -8116,6 +8198,9 @@
                         "slug",
                         "description",
                         "price",
+                        "discountPercent",
+                        "averageRating",
+                        "soldCount",
                         "quantity",
                         "unit",
                         "status",
@@ -8139,6 +8224,21 @@
                           "nullable": true
                         },
                         "price": {
+                          "type": "integer"
+                        },
+                        "discountPercent": {
+                          "minimum": 0,
+                          "maximum": 100,
+                          "type": "integer"
+                        },
+                        "averageRating": {
+                          "minimum": 0,
+                          "maximum": 5,
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "soldCount": {
+                          "minimum": 0,
                           "type": "integer"
                         },
                         "quantity": {
@@ -8487,6 +8587,9 @@
                         "slug",
                         "description",
                         "price",
+                        "discountPercent",
+                        "averageRating",
+                        "soldCount",
                         "quantity",
                         "unit",
                         "status",
@@ -8510,6 +8613,21 @@
                           "nullable": true
                         },
                         "price": {
+                          "type": "integer"
+                        },
+                        "discountPercent": {
+                          "minimum": 0,
+                          "maximum": 100,
+                          "type": "integer"
+                        },
+                        "averageRating": {
+                          "minimum": 0,
+                          "maximum": 5,
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "soldCount": {
+                          "minimum": 0,
                           "type": "integer"
                         },
                         "quantity": {
@@ -9034,8 +9152,8 @@
                 ],
                 "properties": {
                   "file": {
-                    "format": "binary",
-                    "type": "string"
+                    "type": "string",
+                    "format": "binary"
                   }
                 }
               }
@@ -10146,6 +10264,10 @@
                             "required": [
                               "productId",
                               "name",
+                              "imageUrl",
+                              "discountPercent",
+                              "averageRating",
+                              "soldCount",
                               "unit",
                               "price",
                               "quantity",
@@ -10159,6 +10281,25 @@
                               },
                               "name": {
                                 "type": "string"
+                              },
+                              "imageUrl": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "discountPercent": {
+                                "minimum": 0,
+                                "maximum": 100,
+                                "type": "integer"
+                              },
+                              "averageRating": {
+                                "minimum": 0,
+                                "maximum": 5,
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "soldCount": {
+                                "minimum": 0,
+                                "type": "integer"
                               },
                               "unit": {
                                 "type": "string"
@@ -10407,6 +10548,10 @@
                             "required": [
                               "productId",
                               "name",
+                              "imageUrl",
+                              "discountPercent",
+                              "averageRating",
+                              "soldCount",
                               "unit",
                               "price",
                               "quantity",
@@ -10420,6 +10565,25 @@
                               },
                               "name": {
                                 "type": "string"
+                              },
+                              "imageUrl": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "discountPercent": {
+                                "minimum": 0,
+                                "maximum": 100,
+                                "type": "integer"
+                              },
+                              "averageRating": {
+                                "minimum": 0,
+                                "maximum": 5,
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "soldCount": {
+                                "minimum": 0,
+                                "type": "integer"
                               },
                               "unit": {
                                 "type": "string"
@@ -10696,6 +10860,10 @@
                             "required": [
                               "productId",
                               "name",
+                              "imageUrl",
+                              "discountPercent",
+                              "averageRating",
+                              "soldCount",
                               "unit",
                               "price",
                               "quantity",
@@ -10709,6 +10877,25 @@
                               },
                               "name": {
                                 "type": "string"
+                              },
+                              "imageUrl": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "discountPercent": {
+                                "minimum": 0,
+                                "maximum": 100,
+                                "type": "integer"
+                              },
+                              "averageRating": {
+                                "minimum": 0,
+                                "maximum": 5,
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "soldCount": {
+                                "minimum": 0,
+                                "type": "integer"
                               },
                               "unit": {
                                 "type": "string"
@@ -11023,6 +11210,10 @@
                             "required": [
                               "productId",
                               "name",
+                              "imageUrl",
+                              "discountPercent",
+                              "averageRating",
+                              "soldCount",
                               "unit",
                               "price",
                               "quantity",
@@ -11036,6 +11227,25 @@
                               },
                               "name": {
                                 "type": "string"
+                              },
+                              "imageUrl": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "discountPercent": {
+                                "minimum": 0,
+                                "maximum": 100,
+                                "type": "integer"
+                              },
+                              "averageRating": {
+                                "minimum": 0,
+                                "maximum": 5,
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "soldCount": {
+                                "minimum": 0,
+                                "type": "integer"
                               },
                               "unit": {
                                 "type": "string"
@@ -11327,6 +11537,10 @@
                             "required": [
                               "productId",
                               "name",
+                              "imageUrl",
+                              "discountPercent",
+                              "averageRating",
+                              "soldCount",
                               "unit",
                               "price",
                               "quantity",
@@ -11340,6 +11554,25 @@
                               },
                               "name": {
                                 "type": "string"
+                              },
+                              "imageUrl": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "discountPercent": {
+                                "minimum": 0,
+                                "maximum": 100,
+                                "type": "integer"
+                              },
+                              "averageRating": {
+                                "minimum": 0,
+                                "maximum": 5,
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "soldCount": {
+                                "minimum": 0,
+                                "type": "integer"
                               },
                               "unit": {
                                 "type": "string"

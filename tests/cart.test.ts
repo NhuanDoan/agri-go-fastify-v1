@@ -1,7 +1,13 @@
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { buildApp } from "../src/app.js";
-import { caller, createUser, resetDb, testConfig } from "./helpers.js";
+import {
+  caller,
+  completePurchase,
+  createUser,
+  resetDb,
+  testConfig,
+} from "./helpers.js";
 
 let app: FastifyInstance;
 const call = caller(() => app);
@@ -73,6 +79,9 @@ describe("cart", () => {
         productId: mango.id,
         name: "Mango",
         imageUrl: null,
+        discountPercent: 0,
+        averageRating: null,
+        soldCount: 0,
         unit: "kg",
         price: 90000,
         quantity: 3,
@@ -84,6 +93,9 @@ describe("cart", () => {
         productId: carrot.id,
         name: "Carrot",
         imageUrl: null,
+        discountPercent: 0,
+        averageRating: null,
+        soldCount: 0,
         unit: "kg",
         price: 10000,
         quantity: 3,
@@ -93,6 +105,16 @@ describe("cart", () => {
       },
     ]);
     expect(c).toMatchObject({ totalItems: 6, subtotal: 300000 });
+  });
+
+  it("includes live product metrics", async () => {
+    await add(mango.id, 1);
+    await completePurchase(app, admin, customer, mango.id);
+    expect((await cart()).items[0]).toMatchObject({
+      averageRating: null,
+      soldCount: 1,
+      discountPercent: 0,
+    });
   });
 
   it("refuses more than the stock, and a refused add leaves the cart unchanged", async () => {

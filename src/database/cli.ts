@@ -71,13 +71,13 @@ async function main(): Promise<void> {
       case "status": {
         const [done, pending] = (await db.migrate.list(migrationConfig)) as [
           { name: string }[],
-          { file: string }[],
+          string[],
         ];
         console.log(
           `Applied (${done.length}):\n${done.map((m) => `  ${m.name}`).join("\n")}`,
         );
         console.log(
-          `Pending (${pending.length}):\n${pending.map((m) => `  ${m.file}`).join("\n")}`,
+          `Pending (${pending.length}):\n${pending.join("\n")}`,
         );
         break;
       }

@@ -1,7 +1,13 @@
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { buildApp } from "../src/app.js";
-import { caller, createUser, resetDb, testConfig } from "./helpers.js";
+import {
+  caller,
+  completePurchase,
+  createUser,
+  resetDb,
+  testConfig,
+} from "./helpers.js";
 
 let app: FastifyInstance;
 const call = caller(() => app);
@@ -44,6 +50,64 @@ describe("create", () => {
   it("returns an empty image collection", async () => {
     const product = await mk();
     expect(product.images).toEqual([]);
+    expect(product).toMatchObject({
+      averageRating: null,
+      soldCount: 0,
+      discountPercent: 0,
+    });
+  });
+
+  it("allows admins to set a percentage discount", async () => {
+    const product = await mk();
+    const response = await call(
+      "PUT",
+      `/api/products/${product.id}`,
+      { discountPercent: 15 },
+      admin.token,
+    );
+    expect(response.statusCode).toBe(200);
+    expect(response.json().data.discountPercent).toBe(15);
+    expect(
+      (
+        await call(
+          "PUT",
+          `/api/products/${product.id}`,
+          { discountPercent: 101 },
+          admin.token,
+        )
+      ).statusCode,
+    ).toBe(422);
+  });
+
+  it("reports average rating and completed-order sales", async () => {
+    const product = await mk();
+    const buyers = await Promise.all(
+      [5, 4, 3].map(async (rating, index) => {
+        const buyer = await createUser(app, {
+          email: `buyer-${index}@example.com`,
+        });
+        await completePurchase(app, admin, buyer, product.id);
+        await call(
+          "POST",
+          `/api/products/${product.id}/reviews`,
+          { rating },
+          buyer.token,
+        );
+      }),
+    );
+    expect(buyers).toHaveLength(3);
+
+    const response = await call("GET", `/api/products/${product.id}`);
+    expect(response.json().data).toMatchObject({
+      averageRating: 4,
+      soldCount: 3,
+    });
+
+    await app.knex("orders").where({ order_status: "completed" }).update({
+      order_status: "cancelled",
+    });
+    expect((await call("GET", `/api/products/${product.id}`)).json().data.soldCount)
+      .toBe(0);
   });
 
   it("is admin only", async () => {

@@ -76,6 +76,7 @@ export class ProductsService {
           slug,
           description: input.description ?? null,
           price: input.price,
+          discount_percent: input.discountPercent ?? 0,
           quantity,
           unit: input.unit ?? "kg",
           status: input.status ?? "active",
@@ -111,6 +112,8 @@ export class ProductsService {
     if (input.name !== undefined) patch.name = input.name.trim(); // the slug never changes: stable URLs
     if (input.description !== undefined) patch.description = input.description;
     if (input.price !== undefined) patch.price = input.price;
+    if (input.discountPercent !== undefined)
+      patch.discount_percent = input.discountPercent;
     if (input.unit !== undefined) patch.unit = input.unit;
     if (input.status !== undefined) patch.status = input.status;
 

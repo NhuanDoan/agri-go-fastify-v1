@@ -6,6 +6,10 @@ export function toCartDto(cartId: number, rows: CartLineRow[]): CartDto {
     productId: r.product_id,
     name: r.name,
     imageUrl: r.image_url,
+    discountPercent: r.discount_percent,
+    averageRating:
+      r.average_rating === null ? null : Number(r.average_rating),
+    soldCount: Number(r.sold_count),
     unit: r.unit,
     price: r.price, // the CURRENT price: a cart is not a price promise, the order is
     quantity: r.quantity,
