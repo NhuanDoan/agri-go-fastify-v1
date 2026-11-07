@@ -1,8 +1,10 @@
 import { Type, type Static } from "@sinclair/typebox";
+import { Nullable } from "../../common/schemas/common.js";
 
 export const CartItemSchema = Type.Object({
   productId: Type.Integer(),
   name: Type.String(),
+  imageUrl: Nullable(Type.String()),
   unit: Type.String(),
   price: Type.Integer(),
   quantity: Type.Integer(),

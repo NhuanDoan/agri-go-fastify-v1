@@ -72,6 +72,7 @@ describe("cart", () => {
       {
         productId: mango.id,
         name: "Mango",
+        imageUrl: null,
         unit: "kg",
         price: 90000,
         quantity: 3,
@@ -82,6 +83,7 @@ describe("cart", () => {
       {
         productId: carrot.id,
         name: "Carrot",
+        imageUrl: null,
         unit: "kg",
         price: 10000,
         quantity: 3,

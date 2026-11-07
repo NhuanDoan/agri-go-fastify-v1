@@ -26,6 +26,13 @@ export class CartsRepository {
         "ci.product_id",
         "ci.quantity",
         "p.name",
+        db.raw(
+          `(select pi.image_url
+            from product_images as pi
+            where pi.product_id = p.id
+            order by pi.is_primary desc, pi.sort_order asc, pi.id asc
+            limit 1) as image_url`,
+        ),
         "p.unit",
         "p.price",
         "p.status",

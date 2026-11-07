@@ -7,6 +7,7 @@ export interface CartLineRow {
   product_id: number;
   quantity: number;
   name: string;
+  image_url: string | null;
   unit: string;
   price: number;
   status: "active" | "inactive";
