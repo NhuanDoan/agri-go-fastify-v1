@@ -1,4 +1,5 @@
 import { Type, type Static } from "@sinclair/typebox";
+import type { MultipartFile } from "@fastify/multipart";
 
 export const CloudinaryImageBody = Type.Object(
   {
@@ -18,14 +19,31 @@ export const CloudinaryImageBody = Type.Object(
 );
 export type CloudinaryImageBody = Static<typeof CloudinaryImageBody>;
 
-// Multipart is parsed lazily by request.file(), so Fastify does not expose a
-// body to its validator before the handler runs. The field itself remains
-// required in the OpenAPI schema.
-export const ImageUploadMultipartBody = Type.Optional(
-  Type.Object({
-    file: Type.String({ format: "binary" }),
-  }),
-);
+// @fastify/multipart attaches parsed parts before validation so the file can
+// be required by both the runtime validator and the OpenAPI schema.
+export const ImageUploadMultipartBody = Type.Object({
+  file: Type.Unsafe({ isFile: true }),
+});
+export type ImageUploadMultipartBody = {
+  file: MultipartFile;
+};
+
+export function getImageUploadFile(body: unknown): MultipartFile | undefined {
+  if (typeof body !== "object" || body === null || !("file" in body)) {
+    return undefined;
+  }
+  const file = body.file;
+  return typeof file === "object" &&
+    file !== null &&
+    "type" in file &&
+    file.type === "file" &&
+    "mimetype" in file &&
+    typeof file.mimetype === "string" &&
+    "toBuffer" in file &&
+    typeof file.toBuffer === "function"
+    ? (file as MultipartFile)
+    : undefined;
+}
 
 export const ImageSchema = Type.Object({
   id: Type.Integer(),

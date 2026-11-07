@@ -8,6 +8,7 @@ import type {
   ListCategoriesQuery,
   UpdateCategoryBody,
 } from "./categories.schema.js";
+import { getImageUploadFile } from "../media/media.schema.js";
 import { toCategoryDto } from "./categories.serializer.js";
 import type { CategoriesService } from "./categories.service.js";
 
@@ -52,13 +53,13 @@ export class CategoriesController {
   setImage = async (
     request: FastifyRequest<{ Params: IdParams }>,
   ) => {
-    const part = await request.file();
-    if (!part) throw new BadRequestError("Image file is required");
-    const buffer = await part.toBuffer();
+    const file = getImageUploadFile(request.body);
+    if (!file) throw new BadRequestError("Image file is required");
+    const buffer = await file.toBuffer();
     const category = await this.service.setImageFile(
       request.params.id,
       buffer,
-      part.mimetype,
+      file.mimetype,
     );
     return ok(toCategoryDto(category), "Category image updated");
   };

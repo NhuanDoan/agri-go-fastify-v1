@@ -12,6 +12,7 @@ import type {
   UpdateProductBody,
   ProductImageUpdateBody,
 } from "./products.schema.js";
+import { getImageUploadFile } from "../media/media.schema.js";
 import { toProductDto } from "./products.serializer.js";
 import type { ProductsService } from "./products.service.js";
 import type { ProductImagesService } from "./product-images.service.js";
@@ -104,13 +105,13 @@ export class ProductsController {
       Params: IdParams;
     }>,
   ) => {
-    const part = await request.file();
-    if (!part) throw new BadRequestError("Image file is required");
-    const buffer = await part.toBuffer();
+    const file = getImageUploadFile(request.body);
+    if (!file) throw new BadRequestError("Image file is required");
+    const buffer = await file.toBuffer();
     const image = await this.images.addFile(
       request.params.id,
       buffer,
-      part.mimetype,
+      file.mimetype,
     );
     return ok(
       {
