@@ -152,6 +152,9 @@ Always run `pnpm migrate` (or the Docker Compose `migrate` service) before start
 an API release that reads newly added columns. A migration failure must block the
 API rollout.
 
+CI uses an isolated PostgreSQL service with a non-production-only password for the
+production-image smoke test. Do not copy CI database credentials into a deployment.
+
 ## Tests and quality checks
 
 ```bash

@@ -7,6 +7,8 @@
    Rollback of code is safe while the previous schema still works; migrations should be additive (add column, then use it, then drop later).
 For product metrics, the migration adds `products.discount_percent`; verify the migration job
 completed before serving cart or product traffic. `pnpm migrate:status` should show no pending files.
+The CI production-image smoke test must use a non-empty password that is not an
+`.env.example` placeholder; `secret` is intentionally rejected in production mode.
 
 ## Production settings the app insists on
 
